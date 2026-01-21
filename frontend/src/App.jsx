@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Profile from './pages/Profile'
 import DriverDashboard from './pages/driver/Dashboard'
 import CreateTrip from './pages/driver/CreateTrip'
 import MyCar from './pages/driver/MyCar'
@@ -75,8 +76,16 @@ function AppRoutes() {
           ) : (
             <Navigate to="/login" replace />
           )
-        } 
+        }
       />
+
+      <Route path="/profile" element={
+        <PrivateRoute>
+          <Layout>
+            <Profile />
+          </Layout>
+        </PrivateRoute>
+      } />
       
       <Route path="/driver" element={
         <PrivateRoute requiredRole="DRIVER">
