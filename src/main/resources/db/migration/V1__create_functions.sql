@@ -182,9 +182,9 @@ CREATE OR REPLACE FUNCTION public.start_trip(
     p_trip_id BIGINT
 ) RETURNS BOOLEAN AS $$
 BEGIN
-    -- Обновляем статус поездки
+    -- Обновляем статус поездки и устанавливаем started_at
     UPDATE public.trips
-    SET status = 'IN_PROGRESS', updated_at = NOW()
+    SET status = 'IN_PROGRESS', started_at = NOW(), updated_at = NOW()
     WHERE id = p_trip_id AND status = 'SCHEDULED';
     
     IF NOT FOUND THEN
@@ -205,9 +205,9 @@ CREATE OR REPLACE FUNCTION public.complete_trip(
     p_trip_id BIGINT
 ) RETURNS BOOLEAN AS $$
 BEGIN
-    -- Обновляем статус поездки
+    -- Обновляем статус поездки и устанавливаем finished_at
     UPDATE public.trips
-    SET status = 'COMPLETED', updated_at = NOW()
+    SET status = 'COMPLETED', finished_at = NOW(), updated_at = NOW()
     WHERE id = p_trip_id AND status = 'IN_PROGRESS';
     
     IF NOT FOUND THEN
@@ -232,6 +232,48 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Функция отмены поездки
+CREATE OR REPLACE FUNCTION public.cancel_trip(
+    p_trip_id BIGINT
+) RETURNS BOOLEAN AS $$
+DECLARE
+    v_total_seats INTEGER;
+BEGIN
+    -- Проверяем, что поездка существует и еще не завершена/отменена
+    IF NOT EXISTS (
+        SELECT 1 FROM public.trips 
+        WHERE id = p_trip_id 
+        AND status NOT IN ('COMPLETED', 'CANCELLED')
+    ) THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- Вычисляем общее количество забронированных мест
+    SELECT COALESCE(SUM(seats), 0) INTO v_total_seats
+    FROM public.bookings
+    WHERE trip_id = p_trip_id AND status IN ('PENDING', 'CONFIRMED');
+    
+    -- Обновляем статус поездки
+    UPDATE public.trips
+    SET status = 'CANCELLED', updated_at = NOW()
+    WHERE id = p_trip_id;
+    
+    -- Возвращаем все забронированные места
+    IF v_total_seats > 0 THEN
+        UPDATE public.trips
+        SET available_seats = available_seats + v_total_seats, updated_at = NOW()
+        WHERE id = p_trip_id;
+    END IF;
+    
+    -- Отменяем все бронирования для этой поездки
+    UPDATE public.bookings
+    SET status = 'CANCELLED', updated_at = NOW()
+    WHERE trip_id = p_trip_id AND status IN ('PENDING', 'CONFIRMED');
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Функция создания отзыва
 CREATE OR REPLACE FUNCTION public.create_review(
     p_booking_id BIGINT,
@@ -243,6 +285,7 @@ CREATE OR REPLACE FUNCTION public.create_review(
 DECLARE
     v_review_id BIGINT;
     v_comment TEXT;
+    v_trip_id BIGINT;
 BEGIN
     -- Проверка рейтинга
     IF p_rating < 1 OR p_rating > 5 THEN
@@ -256,8 +299,13 @@ BEGIN
         v_comment := TRIM(p_comment);
     END IF;
     
-    INSERT INTO public.reviews (booking_id, reviewer_id, reviewed_id, rating, comment, created_at)
-    VALUES (p_booking_id, p_reviewer_id, p_reviewed_id, p_rating, v_comment, NOW())
+    -- Получаем trip_id из booking для совместимости с init.sql
+    SELECT trip_id INTO v_trip_id
+    FROM public.bookings
+    WHERE id = p_booking_id;
+    
+    INSERT INTO public.reviews (booking_id, trip_id, reviewer_id, reviewed_id, rating, comment, created_at)
+    VALUES (p_booking_id, v_trip_id, p_reviewer_id, p_reviewed_id, p_rating, v_comment, NOW())
     RETURNING id INTO v_review_id;
     
     -- Обновляем рейтинг пользователя

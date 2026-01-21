@@ -154,7 +154,10 @@ public class TripService {
             throw new IllegalArgumentException("Невозможно отменить завершенную или уже отмененную поездку");
         }
 
-        trip.setStatus(Trip.TripStatus.CANCELLED);
-        tripRepository.save(trip);
+        // Используем PL/PGSQL функцию для отмены поездки (она вернет места и отменит бронирования)
+        Boolean result = tripRepository.cancelTrip(tripId);
+        if (!result) {
+            throw new RuntimeException("Ошибка при отмене поездки");
+        }
     }
 }

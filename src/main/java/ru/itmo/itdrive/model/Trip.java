@@ -33,6 +33,12 @@ public class Trip {
     @Column(name = "departure_time", nullable = false)
     private LocalDateTime departureTime;
 
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "finished_at")
+    private LocalDateTime finishedAt;
+
     @Column(name = "max_passengers", nullable = false)
     private Integer maxPassengers;
 
@@ -42,7 +48,7 @@ public class Trip {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "trip_status")
     @Enumerated(EnumType.STRING)
     private TripStatus status;
 

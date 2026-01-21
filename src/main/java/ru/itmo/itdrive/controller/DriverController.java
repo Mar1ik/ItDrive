@@ -3,6 +3,7 @@ package ru.itmo.itdrive.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.itmo.itdrive.dto.DriverStatisticsResponse;
 import ru.itmo.itdrive.dto.UpdateDriverCarRequest;
 import ru.itmo.itdrive.model.Driver;
 import ru.itmo.itdrive.service.DriverService;
@@ -41,5 +42,15 @@ public class DriverController {
         }
         Driver driver = driverService.updateDriverCar(userId, request);
         return ResponseEntity.ok(driver);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<DriverStatisticsResponse> getDriverStatistics() {
+        Long userId = SecurityUtil.getCurrentUserId(userService);
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        DriverStatisticsResponse statistics = driverService.getDriverStatistics(userId);
+        return ResponseEntity.ok(statistics);
     }
 }

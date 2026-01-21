@@ -8,20 +8,27 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.itmo.itdrive.dto.RegisterRequest;
+import ru.itmo.itdrive.dto.UserStatisticsResponse;
+import ru.itmo.itdrive.model.Booking;
 import ru.itmo.itdrive.model.User;
+import ru.itmo.itdrive.repository.BookingRepository;
 import ru.itmo.itdrive.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BookingRepository bookingRepository;
 
-    public UserService(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder,
+                      BookingRepository bookingRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -94,5 +101,36 @@ public class UserService implements UserDetailsService {
         getUserById(userId); // Проверяем существование пользователя
         // Используем нативный SQL для обновления только is_blocked, чтобы избежать проблем с ENUM
         userRepository.updateUserBlockedStatus(userId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public UserStatisticsResponse getUserStatistics(Long userId) {
+        User user = getUserById(userId);
+        List<Booking> bookings = bookingRepository.findByPassengerId(userId);
+        
+        long totalBookings = bookings.size();
+        long completedBookings = bookings.stream()
+                .filter(b -> b.getStatus() == Booking.BookingStatus.COMPLETED)
+                .count();
+        long cancelledBookings = bookings.stream()
+                .filter(b -> b.getStatus() == Booking.BookingStatus.CANCELLED)
+                .count();
+        
+        BigDecimal totalSpent = bookings.stream()
+                .filter(b -> b.getStatus() == Booking.BookingStatus.COMPLETED)
+                .map(Booking::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        Double averageRating = user.getRating();
+        Integer totalTrips = user.getTotalTrips();
+        
+        return new UserStatisticsResponse(
+                totalBookings,
+                completedBookings,
+                cancelledBookings,
+                totalSpent,
+                averageRating,
+                totalTrips
+        );
     }
 }

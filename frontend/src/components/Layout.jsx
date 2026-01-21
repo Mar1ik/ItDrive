@@ -35,12 +35,14 @@ const Layout = ({ children }) => {
       return [
         { path: '/driver', label: 'Мои поездки', icon: '🚗' },
         { path: '/driver/create', label: 'Создать поездку', icon: '➕' },
-        { path: '/driver/my-car', label: 'Мой автомобиль', icon: '🚙' }
+        { path: '/driver/my-car', label: 'Мой автомобиль', icon: '🚙' },
+        { path: '/driver/profile', label: 'Личный кабинет', icon: '👤' }
       ]
     } else {
       return [
         { path: '/passenger', label: 'Найти поездку', icon: '🔍' },
-        { path: '/passenger/my-bookings', label: 'Мои бронирования', icon: '📋' }
+        { path: '/passenger/my-bookings', label: 'Мои бронирования', icon: '📋' },
+        { path: '/passenger/profile', label: 'Личный кабинет', icon: '👤' }
       ]
     }
   }
@@ -63,7 +65,10 @@ const Layout = ({ children }) => {
         <h1 className="page-title">{getPageTitle()}</h1>
         
         <div className="top-bar-actions">
-          <div className="user-profile" onClick={() => navigate('/profile')}>
+          <div className="user-profile" onClick={() => {
+            const profilePath = user?.role === 'DRIVER' ? '/driver/profile' : '/passenger/profile'
+            navigate(profilePath)
+          }}>
             <div className="user-avatar">
               {getInitials(user?.email || 'User')}
             </div>

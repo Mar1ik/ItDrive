@@ -3,9 +3,11 @@ package ru.itmo.itdrive.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.itmo.itdrive.dto.UserStatisticsResponse;
 import ru.itmo.itdrive.model.User;
 import ru.itmo.itdrive.repository.UserRepository;
 import ru.itmo.itdrive.service.UserService;
+import ru.itmo.itdrive.util.SecurityUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -31,5 +33,15 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/profile/statistics")
+    public ResponseEntity<UserStatisticsResponse> getUserStatistics() {
+        Long userId = SecurityUtil.getCurrentUserId(userService);
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        UserStatisticsResponse statistics = userService.getUserStatistics(userId);
+        return ResponseEntity.ok(statistics);
     }
 }

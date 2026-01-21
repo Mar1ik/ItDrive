@@ -42,10 +42,10 @@ public class ReviewService {
             throw new IllegalArgumentException("Вы уже оставили отзыв для этой поездки");
         }
 
-        // Убеждаемся, что comment не null (для корректной работы с PostgreSQL)
+        // Обрабатываем комментарий: пустые строки преобразуем в null
         String comment = (request.getComment() != null && !request.getComment().trim().isEmpty())
                 ? request.getComment().trim()
-                : "";
+                : null;
 
         Long reviewId = reviewRepository.createReview(
                 request.getBookingId(),

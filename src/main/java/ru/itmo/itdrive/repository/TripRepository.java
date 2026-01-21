@@ -36,4 +36,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     
     @Query(value = "SELECT public.complete_trip(:p_trip_id)", nativeQuery = true)
     Boolean completeTrip(@Param("p_trip_id") Long tripId);
+    
+    @Query(value = "SELECT public.cancel_trip(:p_trip_id)", nativeQuery = true)
+    Boolean cancelTrip(@Param("p_trip_id") Long tripId);
 }

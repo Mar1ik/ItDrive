@@ -17,7 +17,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     
     Optional<Review> findByBookingIdAndReviewerId(Long bookingId, Long reviewerId);
     
-    @Query(value = "SELECT public.create_review(:p_booking_id, :p_reviewer_id, :p_reviewed_id, :p_rating, CAST(:p_comment AS TEXT))", nativeQuery = true)
+    @Query(value = "SELECT public.create_review(:p_booking_id, :p_reviewer_id, :p_reviewed_id, :p_rating, NULLIF(TRIM(:p_comment), ''))", nativeQuery = true)
     Long createReview(@Param("p_booking_id") Long bookingId,
                      @Param("p_reviewer_id") Long reviewerId,
                      @Param("p_reviewed_id") Long reviewedId,

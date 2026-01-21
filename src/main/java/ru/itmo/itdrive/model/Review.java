@@ -22,6 +22,10 @@ public class Review {
     private Booking booking;
 
     @ManyToOne
+    @JoinColumn(name = "trip_id")
+    private Trip trip;
+
+    @ManyToOne
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 

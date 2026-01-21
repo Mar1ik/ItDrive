@@ -95,29 +95,23 @@ export const api = axios.create({
 })
 ```
 
-### Google Maps API
+### 2GIS Maps API
 
-Для работы карт необходимо настроить Google Maps API:
+Для работы карт необходимо настроить 2GIS Maps API:
 
-1. Перейдите на [Google Cloud Console](https://console.cloud.google.com/)
-2. Создайте новый проект или выберите существующий
-3. Включите следующие API:
-   - Maps JavaScript API
-   - Directions API
-   - Places API
-4. Создайте API ключ в разделе "Credentials"
-5. Ограничьте ключ по HTTP referrers для безопасности (например, `localhost:3000/*`)
-6. Замените `YOUR_API_KEY` в `index.html` на ваш API ключ:
+1. Перейдите на [2GIS Developers Portal](https://dev.2gis.com/)
+2. Войдите в свой аккаунт или зарегистрируйтесь
+3. Создайте новый проект или выберите существующий
+4. Получите API ключ в разделе "API ключи"
+5. Замените `YOUR_API_KEY` в `index.html` на ваш API ключ:
 
 ```html
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=ВАШ_API_КЛЮЧ&libraries=places,directions"
-  async
-  defer
-></script>
+<script src="https://map.2gis.com/api?key=ВАШ_API_КЛЮЧ"></script>
 ```
 
 **Примечание:** Если API ключ не настроен, карты не будут загружаться, но остальной функционал будет работать.
+
+Подробная инструкция: см. `2GIS_MAPS_SETUP.md`
 
 ## Дизайн
 
@@ -125,5 +119,5 @@ export const api = axios.create({
 - Современным дизайном карточек
 - Боковым меню навигации
 - Верхней панелью с профилем пользователя
-- Интеграцией Google Maps для отображения маршрутов
+- Интеграцией 2GIS Maps для отображения маршрутов
 - Адаптивным дизайном для мобильных устройств
