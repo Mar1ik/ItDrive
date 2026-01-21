@@ -4,7 +4,7 @@ spring:
   
   datasource:
     druid:
-      url: jdbc:postgresql://localhost:5432/tikhon-pc
+      url: jdbc:postgresql://localhost:5433/tikhon-pc
       username: ${DB_USERNAME:tikhon-pc}
       password: ${DB_PASSWORD:123}
       driver-class-name: org.postgresql.Driver
